@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html ng-app="clientApp">
+<head>
+    <meta charset="UTF-8">
+    <title>BeerApp</title>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <style>
+        body { text-decoration: none; color: black; background-color: #eee;}
+        a:hover {  text-decoration: none; color: blue; }
+        div.beer { height: 100px; display: block;}
+    </style>
+    <meta name="viewport" content="width=device-width"/>
+</head>
+<body class="">
+
+<!-- Fixed navbar -->
+<nav class="navbar navbar-inverse  navbar-top">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                <span class="sr-only">Navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/#/">BeerApp</a>
+        </div>
+        <div id="navbar" class="collapse navbar-collapse">
+            <ul class="nav navbar-nav">
+                <li><a href="/#/beer">Bieres</a></li>
+                <li class="collapsed"><a href="/#/client/signIn">Connexion</a></li>
+                <li class="collapsed"><a href="/#/client/signUp">Inscription</a></li>
+            </ul>
+        </div><!--/.nav-collapse -->
+    </div>
+</nav>
+
+<!--<h1 class="text-center"><a href="/#/">BeerApp</a></h1>-->
+
+<% if(message != undefined) { %>
+    <div class="alert-danger"><%=message%></div>
+<% } %>
+
+<div class="col-lg-offset-3 col-lg-6 col-md-offset-2 col-md-8 col-sm-offset-1 col-sm-10">
+    <div ng-view style="border: solid 1px black;"></div>
+
+</div>
+
+
+
+
+
+
+
+
+<script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-animate.min.js"></script>
+<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-route.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<!--<script src="node_modules/angular/angular.js"></script>-->
+<!--<script type="text/javascript" src="js/angular.min.js"></script>-->
+<!--<script type="text/javascript" src="js/angular-animate.min.js"></script>-->
+<!--<script type="text/javascript" src="js/angular-route.min.js"></script>-->
+<script>
+   // var angular = require('angular');
+   // Connexion to the serveur with socket.io
+   var socket = io.connect('http://localhost:8080');
+
+    // clientApp module
+    var telApp = angular.module('clientApp', ['ngRoute']);
+
+    telApp.config(['$routeProvider', function($routeProvider){
+        $routeProvider
+            .when('/', {
+                templateUrl: 'views/beerList.ejs',
+                controller: 'beerController'
+            })
+            .when('/client/signUp', {
+                templateUrl: 'views/signUpForm.ejs',
+                controller: 'clientController'
+            })
+            .when('/client/signIn', {
+                templateUrl: 'views/signInForm.ejs',
+                controller: 'clientController'
+            })
+            .when('/beer', {
+                templateUrl: 'views/beerList.ejs',
+                controller: 'beerAllController'
+            })
+            .when('/beer/:beer', {
+                templateUrl: 'views/beer.ejs',
+                controller: 'beerController'
+            })
+            .when('/beer/add/', {
+                templateUrl: 'views/addBeer.ejs',
+                controller: 'beerAllController'
+            })
+            .otherwise({ redirectTo: '/'});
+    }]);
+
+
+    telApp.controller('clientController', function($scope){
+
+        var clients = [];
+
+        <% clientDB.forEach(function(client, index) { %>
+           clients.push({'pseudo': '<%=client._id%>'});
+        <% }); %>
+
+//        console.log(clients);
+        $scope.clients = clients;
+    })
+
+    .controller('beerController', function($scope, $routeParams) {
+        $scope.beer = $routeParams.beer;
+    })
+
+    .controller('beerAllController', function($scope) {
+
+        var beers = [];
+
+        <% biereDB.forEach(function(beer, index) { %>
+            beers.push({'_id': '<%=beer._id%>'});
+        <% }); %>
+
+//        console.log(beers);
+        $scope.beers = beers;
+    });
+
+
+    // Ecoute
+
+    socket.on('erreur', function(message) {
+        alert('erreur');
+    });
+
+
+</script>
+</body>
+</html>

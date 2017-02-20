@@ -1,0 +1,16 @@
+{
+  "name": "biere",
+  "version": "0.1.0",
+  "dependencies": {
+    "body-parser": "~1.10.1",
+    "cookie-session": "~1.1.0",
+    "ejs": "~2.1.4",
+    "ent": "~0.1.0",
+    "express": "~4.11.0",
+    "mongodb": "^2.2.24",
+    "socket.io": "~1.2.1",
+    "html": "~1.0.0"
+  },
+  "author": "clementcisterne <lamouche444@hotmail.fr>",
+  "description": "Une application ergonomique de gestion de liste de biere ! :)"
+}
