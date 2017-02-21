@@ -15,7 +15,7 @@
 <body class="">
 
 <!-- Fixed navbar -->
-<nav class="navbar navbar-inverse  navbar-top">
+<nav class="navbar navbar-inverse navbar-top">
     <div class="container">
         <div class="navbar-header">
             <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
@@ -28,9 +28,21 @@
         </div>
         <div id="navbar" class="collapse navbar-collapse">
             <ul class="nav navbar-nav">
-                <li><a href="/#/beer">Bieres</a></li>
-                <li class="collapsed"><a href="/#/client/signIn">Connexion</a></li>
-                <li class="collapsed"><a href="/#/client/signUp">Inscription</a></li>
+                <li id="connectionNav" class="collapsed"><a href="/#/client/signIn">Connexion</a></li>
+                <li id="inscriptionNav" class="collapsed"><a href="/#/client/signUp">Inscription</a></li>
+                <li id="helpNav" class="collapsed"><a href="/#/help">Aide</a></li>
+            </ul>
+            <ul id="dropdownUser" class="nav navbar-nav navbar-right">
+                <li class="dropdown">
+                    <a href="" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Bienvenue, <%= sessionName %> <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#">Profil</a></li>
+                        <li><a href="/#/beer/add">Ajouter une bière</a></li>
+                        <li><a href="#">Mes bières</a></li>
+                        <li role="separator" class="divider"></li>
+                        <li><a id="deconnect" href="/client/deconnect/">Déconnexion</a></li>
+                    </ul>
+                </li>
             </ul>
         </div><!--/.nav-collapse -->
     </div>
@@ -38,18 +50,12 @@
 
 <!--<h1 class="text-center"><a href="/#/">BeerApp</a></h1>-->
 
-<% if(message != undefined) { %>
-    <div class="alert-danger"><%=message%></div>
-<% } %>
 
-<div class="col-lg-offset-3 col-lg-6 col-md-offset-2 col-md-8 col-sm-offset-1 col-sm-10">
-    <div ng-view style="border: solid 1px black;"></div>
+
+<div class="view-animate-container col-lg-offset-3 col-lg-6 col-md-offset-2 col-md-8 col-sm-offset-1 col-sm-10">
+    <div ng-view class="row view-animate" ></div>
 
 </div>
-
-
-
-
 
 
 
@@ -65,79 +71,206 @@
 <!--<script type="text/javascript" src="js/angular-animate.min.js"></script>-->
 <!--<script type="text/javascript" src="js/angular-route.min.js"></script>-->
 <script>
-   // var angular = require('angular');
-   // Connexion to the serveur with socket.io
-   var socket = io.connect('http://localhost:8080');
+    // Connection to the serveur with socket.io
+    var socket = io.connect('http://localhost:8080');
+
+    if('<%= sessionName %>' != 'undefined'){
+        $('#dropdownUser').show();
+        $('#addComment').show();
+        $('#connectionNav').hide();
+        $('#inscriptionNav').hide();
+        $('#helpNav').hide();
+    } else {
+        $('#dropdownUser').hide();
+        $('#addComment').hide();
+    }
 
     // clientApp module
-    var telApp = angular.module('clientApp', ['ngRoute']);
+    if(telApp == undefined){
+        var telApp = angular.module('clientApp', ['ngRoute']);
+    }
 
+
+
+
+    // Gestion des routes
     telApp.config(['$routeProvider', function($routeProvider){
         $routeProvider
             .when('/', {
-                templateUrl: 'views/beerList.ejs',
+                templateUrl: 'views/public/beerList.ejs',
                 controller: 'beerController'
             })
+            .when('/help', {
+                templateUrl: 'views/public/help.ejs',
+                controller: 'helpController'
+            })
             .when('/client/signUp', {
-                templateUrl: 'views/signUpForm.ejs',
+                templateUrl: 'views/public/signUpForm.ejs',
                 controller: 'clientController'
             })
             .when('/client/signIn', {
-                templateUrl: 'views/signInForm.ejs',
+                templateUrl: 'views/public/signInForm.ejs',
                 controller: 'clientController'
             })
-            .when('/beer', {
-                templateUrl: 'views/beerList.ejs',
-                controller: 'beerAllController'
-            })
-            .when('/beer/:beer', {
-                templateUrl: 'views/beer.ejs',
+            .when('/beerDetail/:beer', {
+                templateUrl: 'views/public/beer.ejs',
                 controller: 'beerController'
             })
-            .when('/beer/add/', {
-                templateUrl: 'views/addBeer.ejs',
-                controller: 'beerAllController'
+            .when('/beer/add', {
+                templateUrl: 'views/private/addBeerForm.ejs',
+                controller: 'userController'
+            })
+            .when('/beer/update/:beer', {
+                templateUrl: 'views/private/updateBeerForm.ejs',
+                controller: 'userController'
+            })
+            .when('/beer/add/comment', {
+                templateUrl: 'views/private/addCommentForm.ejs',
+                controller: 'userController'
+            })
+            .when('/comment/update/:comment', {
+                templateUrl: 'views/private/updateCommentForm.ejs',
+                controller: 'userController'
             })
             .otherwise({ redirectTo: '/'});
     }]);
 
+// Gestion des controller
+    telApp.controller('helpController', function($scope) {
 
-    telApp.controller('clientController', function($scope){
+    })
+
+    .controller('clientController', function($scope){
 
         var clients = [];
+        var strArrayClients = [];
+
 
         <% clientDB.forEach(function(client, index) { %>
-           clients.push({'pseudo': '<%=client._id%>'});
+        clients.push({'pseudo': '<%=client._id%>'});
+        strArrayClients.push('<%=client._id%>');
         <% }); %>
-
-//        console.log(clients);
         $scope.clients = clients;
+
+    // Gestion des formulaires clients
+        $('#form-signUp').submit(function(event) {
+            var pseudo = $('#inputPseudo').val();
+            if( strArrayClients.indexOf(pseudo) != -1) {
+                alert('Le pseudo '+ pseudo + ' existe déjâ');
+            } else {
+                alert('Vous vous êtes bien inscrit !\nBienvenue '+pseudo);
+                return;
+            }
+            event.preventDefault();
+        });
+
+        $('#form-signIn').submit(function(event) {
+            var pseudo = $('#inputPseudo').val();
+            if( strArrayClients.indexOf(pseudo) == -1) {
+                alert('Le pseudo '+ pseudo + ' n\'existe pas, veuillez vous inscrire pour continuer');
+
+            } else {
+//                alert('Bienvenue '+pseudo);
+                return;
+            }
+            event.preventDefault();
+        });
+
     })
 
     .controller('beerController', function($scope, $routeParams) {
-        $scope.beer = $routeParams.beer;
+
+
     })
 
-    .controller('beerAllController', function($scope) {
-
-        var beers = [];
+    .controller('beerController', function($scope, $routeParams) {
+        var beers = []; // Va contenir tous les objets bières en bd ...
+        var beersArray = []; // Va contenir tous les noms des bières
+        var comments = []; // Va contenir tous les objets comment
 
         <% biereDB.forEach(function(beer, index) { %>
-            beers.push({'_id': '<%=beer._id%>'});
+        beers.push({
+            '_id': '<%=beer._id%>',
+            'type': '<%=beer.type%>',
+            'degre': '<%=beer.degre%>',
+        });
+        beersArray.push('<%=beer._id%>');
         <% }); %>
 
-//        console.log(beers);
+        <% commentDB.forEach(function(comment, index) { %>
+        comments.push({
+            '_id': '<%= comment._id %>',
+            'biereId': '<%= comment.biereId %>',
+            'clientId': '<%= comment.clientId %>',
+            'date': '<%= comment.date %>' ,
+            'mark': '<%= comment.mark %>' ,
+            'comment': '<%= comment.comment %>'
+        });
+        <% }); %>
+
+    // Gestion des formulaires bieres
+        $('#form-addBeer').submit(function(event) {
+            var beer = $('#inputBeerName').val();
+            if(beersArray.indexOf(beer) != -1){
+                alert('La bière '+ beer + ' existe déjâ');
+            } else {
+                return;
+            }
+            event.preventDefault();
+        });
+
+        if($routeParams.beer){
+            $scope.beer = $routeParams.beer;
+            var beerComments = []; // va contenir toutes les appréciatiations
+
+            for(i=0; i<comments.length; i++){
+                if(comments[i].biereId == $routeParams.beer ){
+                    beerComments.push(comments[i]);
+                }
+            }
+
+            $scope.comments = beerComments;
+        }
+
+
         $scope.beers = beers;
+    })
+
+    .controller('userController', function($scope, $routeParams) {
+        //        var user = null;
     });
 
 
-    // Ecoute
-
+// Ecoute
     socket.on('erreur', function(message) {
         alert('erreur');
+    })
+
+    .on('sendData', function(data){
+//            var dataClients = data.clientDB;
+        var dataBieres = data.biereDB;
+//        console.log(data.clientDB);
+//        console.log(data.biereDB);
+    })
+
+    .on('reload', function(message){
+        reload();
     });
+
+
+
+//Emission
+
+    socket.emit('getData');
+
+
+// Some functions
+    function reload(){
+        window.location.reload();
+    }
 
 
 </script>
 </body>
 </html>
+

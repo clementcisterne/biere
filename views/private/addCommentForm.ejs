@@ -1,0 +1,13 @@
+<form class="form-addComment" action="/beer/add/comment/" method="post">
+
+    <h2 class="form-signin-heading text-center">Ajouter une appréciation</h2>
+    <input type="date" class="form-control" id="inputCommentDate" name="date" placeholder="La date" required />
+    <input type="text" class="form-control" id="inputCommentMark" name="mark" placeholder="La note" required />
+    <input type="text" class="form-control" id="inputComment" name="comment" placeholder="Votre appéciation">
+
+    <input type="hidden" class="form-control" name="viereId" />
+    <input type="hidden" class="form-control" name="clientId" />
+
+    <br>
+    <input class="btn btn-lg btn-primary btn-block" type="submit" value="Ajouter"/>
+</form>

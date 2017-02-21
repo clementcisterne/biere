@@ -1,0 +1,18 @@
+<h2 class="text-center">Liste des bières</h2>
+
+
+<input class="col-xs-12 text-center" type="text" ng-model="beer" placeholder="Rechercher un bière"/>
+
+
+
+
+    <a class="row text-center beer"  ng-repeat="beer in beers | filter:beer" href="/#/beerDetail/{{ beer._id }}">
+        <div>
+            <h2 class="col-xs-4" >{{ beer._id }}</h2>
+            <h3 class="col-xs-4">  {{ beer.type }} </h3>
+            <h3 class="col-xs-4">  {{ beer.degre }}° </h3>
+        </div>
+    </a>
+
+
+
